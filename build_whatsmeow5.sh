@@ -13,7 +13,21 @@ TMP_DIR="$(mktemp -d)"
 
 cd "$TMP_DIR"
 
-git clone --depth 1 https://github.com/tulir/whatsmeow
+git clone https://github.com/tulir/whatsmeow
+cd whatsmeow
+
+# Check if commit_hash.txt exists in the correct location
+if [ -f "$CURRENT_DIR/commit_hash.txt" ]; then
+    # Read the commit hash from commit_hash.txt
+    commit_hash=$(cat "$CURRENT_DIR/commit_hash.txt")
+
+    # Checkout the specific commit
+    git checkout $commit_hash
+else
+    echo "Warning: commit_hash.txt not found. Using latest commit."
+fi
+
+cd mdtest
 
 clear 2>/dev/null
 
@@ -28,7 +42,6 @@ echo -e "\nDone adding extended support\n\n------------------------\n"
 # fix Termux permissions
 value="true"; key="allow-external-apps"; file="/data/data/com.termux/files/home/.termux/termux.properties"; mkdir -p "$(dirname "$file")"; chmod 700 "$(dirname "$file")"; if ! grep -E '^'"$key"'=.*' $file &>/dev/null; then [[ -s "$file" && ! -z "$(tail -c 1 "$file")" ]] && newline=$'\n' || newline=""; echo "$newline$key=$value" >> "$file"; else sed -i'' -E 's/^'"$key"'=.*/'"$key=$value"'/' $file; fi
 
-cd whatsmeow/mdtest
 go mod tidy
 
 echo -e "\nFinal step, building mdtest binary. Takes about 10s~1min"
